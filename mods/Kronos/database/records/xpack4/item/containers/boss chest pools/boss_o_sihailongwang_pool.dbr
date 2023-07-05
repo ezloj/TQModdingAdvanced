@@ -1,0 +1,5 @@
+FileDescription,LegendaryLootPool,
+fixedItemName1,records\xpack4\item\containers\boss containers\boss_o_sihailongwang.dbr,
+Class,ProxyAccessoryPool,
+templateName,database\Templates\ProxyAccessoryPool.tpl,
+fixedItemChance,100,
