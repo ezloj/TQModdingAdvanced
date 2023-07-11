@@ -1,0 +1,49 @@
+version: "2.1"
+
+services:
+  pipenv:
+    build:
+      context: .
+    volumes:
+      - ${WORKDIR}:${WORKDIR}
+    working_dir: ${WORKDIR}
+    entrypoint: pipenv
+    environment:
+      - PIPENV_SKIP_LOCK=1
+      - PIPENV_VENV_IN_PROJECT=1
+      - PIP_IGNORE_INSTALLED=1
+      - PIPENV_PIPFILE=${PIPENV_PIPFILE}
+      - PIPENV_CACHE_DIR=${PIPENV_CACHE_DIR}
+
+  pytest:
+    extends: pipenv
+    env_file:
+      - ${ENV_FILE}
+    command: run pytest -o cache_dir=${PYTEST_CACHE_DIR} --ignore=test/functional ${OPT} ${TEST_DIR}
+
+  pylint:
+    extends: pipenv
+    environment:
+      - PYLINTHOME=${PYLINTHOME}
+    command: run pylint ${DIR}
+
+  prospector:
+    extends: pipenv
+    environment:
+      - PYLINTHOME=${PYLINTHOME}
+    command: run prospector --tool ${TOOL} ${DIR}
+
+  flake8:
+    extends: pipenv
+    command: run flake8 ${DIR}
+
+  tinker:
+    extends: pipenv
+    environment:
+      - PYLINTHOME=${PYLINTHOME}
+    entrypoint: sh
+
+  functional-test:
+    extends:
+      service: pytest
+    command: run pytest -o cache_dir=${PYTEST_CACHE_DIR} test/functional

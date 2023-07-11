@@ -1,0 +1,18 @@
+output-format: pylint
+
+strictness: high
+test-warnings: true
+doc-warnings: false
+
+ignore-paths:
+  - docs
+
+pep8:
+  full: true
+  options:
+    max-line-length: 120
+
+mccabe:
+  run: false
+  options:
+    max-complexity: 10
