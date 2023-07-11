@@ -1,0 +1,7 @@
+.coverage
+.venv
+.pipenv_cache
+.pytest_cache
+.pylint_cache
+*.pyc
+**/__pycache__/*

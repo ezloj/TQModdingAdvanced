@@ -1,0 +1,1 @@
+# Static files for use in GUI and such
