@@ -9,143 +9,81 @@ WORKDIR				?= $(shell bash -c 'pwd')
 DOCKER         		?= docker
 DOCKER_COMPOSE 		?= MSYS_NO_PATHCONV=1 WORKDIR=${WORKDIR} ENV_FILE=${ENV_FILE} docker-compose
 
-## Docker commands Arguments:
-PIPENV_CACHE_DIR	?= .pipenv_cache
-PYTEST_CACHE_DIR 	?= .pytest_cache
-PYLINTHOME 			?= .pylint_cache
-BASE_ARGS 			?= PIPENV_PIPFILE=${WORKDIR}/Pipfile PIPENV_CACHE_DIR=${WORKDIR}/${PIPENV_CACHE_DIR}
-PYTEST_ARGS			?= PYTEST_CACHE_DIR=${WORKDIR}/${PYTEST_CACHE_DIR}
-PYLINT_ARGS			?= PYLINTHOME=${WORKDIR}/${PYLINTHOME}
-
 ## Applications
-PIPENV		   		?= ${BASE_ARGS} ${DOCKER_COMPOSE} run pipenv
-TINKER         		?= ${BASE_ARGS} ${PYTEST_ARGS} ${PYLINT_ARGS} ${DOCKER_COMPOSE} run tinker
-PYTEST				?= ${BASE_ARGS} ${PYTEST_ARGS} ${DOCKER_COMPOSE} run pytest
-PYLINT				?= ${BASE_ARGS} ${PYLINT_ARGS} ${DOCKER_COMPOSE} run pylint
-FLAKE8				?= ${BASE_ARGS} ${DOCKER_COMPOSE} run flake8
-PROSPECTOR			?= ${BASE_ARGS} ${PYLINT_ARGS} ${DOCKER_COMPOSE} run prospector
+WINE                ?= ${BASE_ARGS} ${DOCKER_COMPOSE} run --remove-orphans wine
+TINKER         		?= ${BASE_ARGS} ${PYTEST_ARGS} ${PYLINT_ARGS} ${DOCKER_COMPOSE} run --remove-orphans tinker
+
 
 # Helpers
-all: depend
-
-depend: venv-dev
+all: local-container
 
 # run locally
-tinker:
+local-container:
+	@echo "Building local images..."
+	${DOCKER_COMPOSE} build wine tinker >/dev/null 2>&1
+
+tinker: local-container
 	${TINKER}
 
-venv-dev:
-	${PIPENV} install --dev
+# Build
+build:
+	${TINKER} build.sh
 
-build-venv:
-	${PIPENV} sync
-
-lock:
-	${PIPENV} lock
-
-.PHONY: all depend tinker venv venv-dev build-venv lock
+.PHONY: all build local-container tinker
 
 # QA
 qa: static-analysis flake8 coverage
 
 #coverage
-coverage:
-	OPT="--cov-report term-missing --cov=src" ${PYTEST}
+coverage: local-container
+	${WINE} pytest --cov-report term-missing --cov=src test
 
 .PHONY: qa coverage
 
 #static analysis
 static-analysis: lint mccabe
 
-lint: lint-src lint-test
+lint: local-container
+	${WINE} pylint src test
 
-mccabe: mccabe-src mccabe-test
+mccabe: local-container
+	${WINE} python run prospector -tool mccabe src
+	${WINE} python run prospector -tool mccabe test
 
-lint-src:
-	DIR="${WORKDIR}/src" ${PYLINT}
+.PHONY: static-analysis lint mccabe
 
-lint-test:
-	DIR="${WORKDIR}/test" ${PYLINT}
+flake8: local-container
+	${WINE} python run pylint src test
 
-mccabe-src:
-	TOOL=mccabe DIR="${WORKDIR}/src" ${PROSPECTOR}
-
-mccabe-test:
-	TOOL=mccabe DIR="${WORKDIR}/test" ${PROSPECTOR}
-
-.PHONY: static-analysis lint mccabe lint-src lint-test mccabe-src mccabe-test
-
-flake8: flake8-src flake8-test
-
-flake8-src:
-	DIR="${WORKDIR}/src" ${FLAKE8}
-
-flake8-test:
-	DIR="${WORKDIR}/test" ${FLAKE8}
-
-.PHONY: flake8 flake8-src flake8-test
+.PHONY: flake8
 
 #security
 security: bandit dodgy
 
-bandit: bandit-src bandit-test
+bandit:
+	${WINE} python run prospector -tool bandit src
+	${WINE} python run prospector -tool bandit test
 
-bandit-src:
-	TOOL=bandit DIR="${WORKDIR}/src" ${PROSPECTOR}
+dodgy:
+	${WINE} python run prospector -tool dodgy src
+	${WINE} python run prospector -tool dodgy test
 
-bandit-test:
-	TOOL=bandit DIR="${WORKDIR}/test" ${PROSPECTOR}
-
-
-dodgy: dodgy-src dodgy-test
-
-dodgy-src:
-	TOOL=dodgy DIR="${WORKDIR}/src" ${PROSPECTOR}
-
-dodgy-test:
-	TOOL=dodgy DIR="${WORKDIR}/test" ${PROSPECTOR}
-
-.PHONY: security bandit dodgy bandit-src bandit-test dodgy-src dodgy-test
+.PHONY: security bandit dodgy
 
 # Tests
 test: unit-tests integration-tests
 
-unit-tests:
-	TEST_DIR=test/unit ${PYTEST}
+unit-tests: local-container
+	${WINE} pytest test/unit
 
-integration-tests:
-	TEST_DIR=test/integration ${PYTEST}
+integration-tests: local-container
+	${WINE} pytest test/integration
 
-functional-tests: clean-all depend
-	APP_IMAGE=${IMAGE} ${BASE_ARGS} ${PYTEST_ARGS} ${DOCKER_COMPOSE} up functional-test; \
-		RESULT=$$?; \
-		make clean-docker; \
-		exit $$RESULT
 
-.PHONY: test unit-tests functional-tests integration-tests
+.PHONY: test unit-tests integration-tests
 
 # Cleaning
-clean-all: remove-cov remove-cache remove-venv clean-docker
+clean:
+	rm -f tqma.exe
 
-pipenv-clean:
-	${PIPENV} clean
-
-clean-venv:
-	${PIPENV} uninstall --all --clear
-
-remove-cov:
-	rm -rf .coverage
-
-remove-venv: clean-venv
-	${PIPENV} --rm
-
-remove-cache:
-	rm -rf ${PYTEST_CACHE_DIR}
-	rm -rf ${PYLINTHOME}
-	rm -rf ${PIPENV_CACHE_DIR}
-
-clean-docker:
-	${BASE_ARGS} ${DOCKER_COMPOSE} rm --stop --force -v
-	${DOCKER_COMPOSE} down --remove-orphans
-
-.PHONY: pipenv-clean clean-venv clean-cache remove-cov remove-venv clean-all clean-docker
+.PHONY: clean
