@@ -1,8 +1,6 @@
 """
-Unit tests for src.service.controllers.application_management module
+Integration tests
 """
-
-from unittest.mock import patch, mock_open
 
 
 def test_get_app_version():

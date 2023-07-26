@@ -10,8 +10,8 @@ DOCKER         		?= docker
 DOCKER_COMPOSE 		?= MSYS_NO_PATHCONV=1 WORKDIR=${WORKDIR} ENV_FILE=${ENV_FILE} docker-compose
 
 ## Applications
-WINE                ?= ${BASE_ARGS} ${DOCKER_COMPOSE} run --remove-orphans wine
-TINKER         		?= ${BASE_ARGS} ${PYTEST_ARGS} ${PYLINT_ARGS} ${DOCKER_COMPOSE} run --remove-orphans tinker
+WINE                ?= ${BASE_ARGS} ${DOCKER_COMPOSE} run wine
+TINKER         		?= ${BASE_ARGS} ${PYTEST_ARGS} ${PYLINT_ARGS} ${DOCKER_COMPOSE} run tinker
 
 
 # Helpers
