@@ -1,10 +1,6 @@
 """
-Functional tests for app
+Functional tests
 """
-
-from os import getenv
-import requests
-
 
 def get_app_version() -> str:
     """
