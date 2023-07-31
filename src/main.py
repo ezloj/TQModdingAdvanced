@@ -1,17 +1,15 @@
 """
-Main module creates the QT main window:
+This is the entry point for the application
+This file is what's executed to load up everything else
+It is best to keep it clean and simple and keep the application logic in other modules
 """
+import sys
+
+from PyQt6.QtWidgets import QApplication
+from src.gui import windows
 
 
-DEBUG = False
-
-
-def main():
-    """
-    Run flask app
-    """
-    print("QT main window generated here")
-
-
-if __name__ == '__main__':
-    main()
+app = QApplication(sys.argv)
+mainWin = windows.MainWindow()
+mainWin.show()
+sys.exit( app.exec() )
