@@ -1,1 +1,0 @@
-# QT based GUI

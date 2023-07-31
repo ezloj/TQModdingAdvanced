@@ -26,7 +26,7 @@ tinker: local-container
 	${TINKER}
 
 # Build
-build:
+build: local-container
 	${TINKER} build.sh
 
 .PHONY: all build local-container tinker
