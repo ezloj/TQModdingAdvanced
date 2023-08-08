@@ -1,4 +1,7 @@
 [MASTER]
+disable=
+    C0114, # missing-module-docstring
+    W1203 # logging-fstring-interpolation
 # allow source to be in nested package and tell pylint were to find correct packages from virtualenv
 init-hook='import sys; sys.path.append("/app/src"); sys.path.append(f"/app/.venv/lib/python{sys.version_info.major}.{sys.version_info.minor}/site-packages");'
 

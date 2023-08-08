@@ -10,6 +10,8 @@ To install make on Windows use chocolatey: https://chocolatey.org/install#indivi
 To run the docker container with python and all dependencies do: `make` followed by `make tinker`  
 The former will install all dependencies  
 The latter will drop you off in a shell with current directory (this repository) mounted there  
+From there on, to get a python shell - run `wine python3`  
+After that, to import settings module: `import src.config.settings`  
 
 ### Notes
 #### Issues with volume mount path conversion

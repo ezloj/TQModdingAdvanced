@@ -5,4 +5,5 @@ flake8==3.8.3
 requests==2.24.0
 #black=20.8b1
 PyQt6==6.5.0
-prospector[with_everything]
+pyinstaller==5.13.0
+prospector[with_everything]==1.7.7
