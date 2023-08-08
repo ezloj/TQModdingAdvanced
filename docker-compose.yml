@@ -9,6 +9,7 @@ services:
     working_dir: ${WORKDIR}
     environment:
       - WORKDIR=${WORKDIR}
+      - LOGGING_LEVEL=${LOGGING_LEVEL}
     entrypoint: wine
 
   tinker:

@@ -4,14 +4,18 @@ SHELL := /bin/bash
 ## App docker containers env settings:
 ENV_FILE			?= ".env"
 WORKDIR				?= $(shell bash -c 'pwd')
+LOGGING_LEVEL       ?= INFO
 
 ## Docker commands:
 DOCKER         		?= docker
-DOCKER_COMPOSE 		?= MSYS_NO_PATHCONV=1 WORKDIR=${WORKDIR} ENV_FILE=${ENV_FILE} docker-compose
+DOCKER_COMPOSE 		?= MSYS_NO_PATHCONV=1 LOGGING_LEVEL=${LOGGING_LEVEL} WORKDIR=${WORKDIR} ENV_FILE=${ENV_FILE} docker-compose
 
 ## Applications
 WINE                ?= ${BASE_ARGS} ${DOCKER_COMPOSE} run wine
 TINKER         		?= ${BASE_ARGS} ${PYTEST_ARGS} ${PYLINT_ARGS} ${DOCKER_COMPOSE} run tinker
+
+## Options
+PYTEST_OPTIONS ?= --capture=tee-sys
 
 
 # Helpers
@@ -74,10 +78,10 @@ dodgy:
 test: unit-tests integration-tests
 
 unit-tests: local-container
-	${WINE} pytest test/unit
+	${WINE} pytest ${PYTEST_OPTIONS} test/unit
 
 integration-tests: local-container
-	${WINE} pytest test/integration
+	${WINE} pytest ${PYTEST_OPTIONS} test/integration
 
 
 .PHONY: test unit-tests integration-tests
