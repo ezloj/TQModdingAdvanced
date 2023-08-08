@@ -29,11 +29,15 @@ local-container:
 tinker: local-container
 	${TINKER}
 
+.PHONY: local-container tinker
+
 # Build
-build: local-container
+build: local-container build-tqma
+
+build-tqma:
 	${TINKER} build.sh
 
-.PHONY: all build local-container tinker
+.PHONY: all build build-tqma
 
 # QA
 qa: static-analysis flake8 coverage
@@ -86,8 +90,11 @@ integration-tests: local-container
 
 .PHONY: test unit-tests integration-tests
 
-# Cleaning
-clean:
-	rm -f tqma.exe
 
-.PHONY: clean
+# Cleaning
+clean: clean-output
+
+clean-output:
+	rm -f output
+
+.PHONY: clean clean-output

@@ -7,12 +7,16 @@ import logging
 import sys
 
 from PyQt6.QtWidgets import QApplication
-from src.gui import windows
+from src.gui.windows.main_window import MainWindow
+import src.config.settings
 
 
 logger = logging.getLogger("tqma")
+logger.info("TQMA started!")
+
+settings = src.config.settings.Settings()
 
 app = QApplication(sys.argv)
-mainWin = windows.MainWindow()
-mainWin.show()
-sys.exit( app.exec() )
+main_window = MainWindow(settings)
+main_window.show()
+sys.exit(app.exec())

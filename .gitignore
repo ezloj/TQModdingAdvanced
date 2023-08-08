@@ -5,4 +5,4 @@
 .pylint_cache
 *.pyc
 **/__pycache__/*
-tqma.exe
+output

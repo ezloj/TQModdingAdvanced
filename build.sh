@@ -1,4 +1,7 @@
 #!/bin/bash
 set -e
-wine pyinstaller --onefile --windowed --name tqma --specpath /tmp/ --distpath /tmp/ --workpath /tmp/ ${WORKDIR}/src/main.py
-cp /tmp/tqma.exe ${WORKDIR}
+rm -rf output
+wine pyinstaller --clean --windowed --name tqma --specpath /tmp/spec --distpath /tmp/dist --workpath /tmp/work ${WORKDIR}/src/main.py
+mkdir output
+cp -R /tmp/dist/tqma/* output
+find . -name __pycache__ | xargs rm -fr
