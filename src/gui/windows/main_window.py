@@ -8,7 +8,7 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QAction
 from PyQt6.QtWidgets import QMainWindow, QToolBar
 
-from src.gui.windows.settings_window import SettingsWindow
+from .settings_window import SettingsWindow
 
 
 logger = logging.getLogger("tqma")
