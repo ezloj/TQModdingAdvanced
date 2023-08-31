@@ -2,26 +2,28 @@
 Unit tests for settings module
 """
 import logging
-import src.config.settings
+import unittest
+from unittest import mock
 
+from src.config.settings import Settings
 
 logger = logging.getLogger("tqma")
 
 
-class TestSettings:
+class TestSettings(unittest.TestCase):
     """ Class containing tests for settings module """
 
-    @classmethod
-    def setup_class(cls):
+    @mock.patch('src.config.settings.Settings.get_defaults', new=mock.Mock(return_value={}))
+    def setUp(self):
         """ Use this method to setup the tests """
 
         print() # this just prints a newline after module name printed by pytest
-        cls.settings = src.config.settings.Settings()
+        self.settings = Settings()
+
 
     def test_get_settings_file(self):
         """
-        Testing application_management._get_app_version function
-        Raises: AssertionError
+        Tests get setttings file
         """
 
         logger.debug(f"Settings file: {self.settings.settings_file}")
