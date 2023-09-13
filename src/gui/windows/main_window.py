@@ -6,13 +6,11 @@ import traceback
 
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import (
-    QMainWindow, QToolBar, QVBoxLayout, QFrame,
-    QPushButton, QWidget
-)
+from PyQt6.QtWidgets import QMainWindow, QToolBar, QVBoxLayout, QFrame, QWidget
 
+from src.gui.frames.mod_merge_frame import ModMergeFrame
+from src.gui.frames.mod_manager_frame import ModManagerFrame
 from .settings_window import SettingsWindow
-
 
 logger = logging.getLogger("tqma")
 
@@ -39,23 +37,11 @@ class MainWindow(QMainWindow):
             central_widget = QWidget(self)
             central_widget_layout = QVBoxLayout(central_widget)
 
-            for frame_name in ["Mod merge", "Mod manager"]:
 
-                frame = QFrame(self, objectName=frame_name)
-                layout = QVBoxLayout(frame)
-                test_button = QPushButton(frame_name, self)
-                layout.addWidget(test_button)
-                frame.setLayout(layout)
-                frame.hide()
-
-                frame_action = QAction(frame_name, self)
-                frame_action.setStatusTip(frame_name)
-                frame_action.triggered.connect(
-                    lambda checked, frame_name=frame_name: self.show_frame_by_name(frame_name)
-                )
-                toolbar.addAction(frame_action)
-
-                central_widget_layout.addWidget(frame)
+            # Generate frames. Those come from custom QFrame-based classes
+            # Can be toggled with toolbar and are displayed in the central widget
+            self.generate_mod_merge_frame(central_widget_layout, toolbar)
+            self.generate_mod_manager_frame(central_widget_layout, toolbar)
 
             central_widget.setLayout(central_widget_layout)
             self.setCentralWidget(central_widget)
@@ -71,12 +57,42 @@ class MainWindow(QMainWindow):
         self.settings_window.setWindowModality(Qt.WindowModality.ApplicationModal)
         self.settings_window.show()
 
+    def generate_mod_merge_frame(self, central_widget_layout, toolbar):
+        """ Generates main window frame with a given name """
+        frame_name = "Mod merge"
+        frame = ModMergeFrame(self)
+
+        frame_action = QAction(frame_name, self)
+        frame_action.setStatusTip(frame_name)
+        frame_action.triggered.connect(
+            lambda checked, frame_name=frame_name: self.show_frame_by_name(frame_name)
+        )
+
+        central_widget_layout.addWidget(frame)
+        toolbar.addAction(frame_action)
+
+    def generate_mod_manager_frame(self, central_widget_layout, toolbar):
+        """ Generates main window frame with a given name """
+        frame_name = "Mod manager"
+        frame = ModManagerFrame(self)
+
+        frame_action = QAction(frame_name, self)
+        frame_action.setStatusTip(frame_name)
+        frame_action.triggered.connect(
+            lambda checked, frame_name=frame_name: self.show_frame_by_name(frame_name)
+        )
+
+        central_widget_layout.addWidget(frame)
+        toolbar.addAction(frame_action)
+
     def show_frame_by_name(self, frame_name):
         """ Takes a frame name as an input parameter. Searches main window for that frame and returns it """
-        frames_to_hide = self.findChildren(QFrame)
+        frame_classes = (QFrame, ModMergeFrame)
+        frames_to_hide = self.findChildren(frame_classes)
+        logger.debug(f"All frames to hide: {frames_to_hide}")
         for frame in frames_to_hide:
             frame.hide()
-        frame_to_show = self.findChild(QFrame, frame_name)
+        frame_to_show = self.findChild(frame_classes, frame_name)
         logger.debug(f"Found frame: {frame_to_show}")
         if frame_to_show:
             frame_to_show.show()
