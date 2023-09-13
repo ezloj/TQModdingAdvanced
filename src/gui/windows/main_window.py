@@ -4,9 +4,9 @@ The code for all the windows that TQMA has
 import logging
 import traceback
 
-from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QMainWindow, QToolBar, QVBoxLayout, QFrame, QWidget
+from PyQt6.QtWidgets import QMainWindow, QToolBar, QVBoxLayout, QWidget
 
 from src.gui.frames.mod_merge_frame import ModMergeFrame
 from src.gui.frames.mod_manager_frame import ModManagerFrame
@@ -21,9 +21,9 @@ class MainWindow(QMainWindow):
         try:
             QMainWindow.__init__(self)
             self.settings_window = None
+            self.frames = []
             self.settings = settings
 
-            self.setMinimumSize(QSize(700, 700))
             self.setWindowTitle("Titan Quest Modding Advanced - TQMA")
 
             toolbar = QToolBar("Main toolbar")
@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
     def generate_mod_merge_frame(self, central_widget_layout, toolbar):
         """ Generates main window frame with a given name """
         frame_name = "Mod merge"
-        frame = ModMergeFrame(self)
+        frame = ModMergeFrame(self, self.settings)
 
         frame_action = QAction(frame_name, self)
         frame_action.setStatusTip(frame_name)
@@ -70,11 +70,13 @@ class MainWindow(QMainWindow):
 
         central_widget_layout.addWidget(frame)
         toolbar.addAction(frame_action)
+
+        self.frames.append(frame)
 
     def generate_mod_manager_frame(self, central_widget_layout, toolbar):
         """ Generates main window frame with a given name """
         frame_name = "Mod manager"
-        frame = ModManagerFrame(self)
+        frame = ModManagerFrame(self, self.settings)
 
         frame_action = QAction(frame_name, self)
         frame_action.setStatusTip(frame_name)
@@ -85,14 +87,15 @@ class MainWindow(QMainWindow):
         central_widget_layout.addWidget(frame)
         toolbar.addAction(frame_action)
 
+        self.frames.append(frame)
+
     def show_frame_by_name(self, frame_name):
         """ Takes a frame name as an input parameter. Searches main window for that frame and returns it """
-        frame_classes = (QFrame, ModMergeFrame)
-        frames_to_hide = self.findChildren(frame_classes)
-        logger.debug(f"All frames to hide: {frames_to_hide}")
-        for frame in frames_to_hide:
+        for frame in self.frames:
             frame.hide()
-        frame_to_show = self.findChild(frame_classes, frame_name)
+
+        #frame_classes = (ModMergeFrame, ModManagerFrame)
+        frame_to_show = self.findChild(QWidget, name=frame_name)
         logger.debug(f"Found frame: {frame_to_show}")
         if frame_to_show:
             frame_to_show.show()
