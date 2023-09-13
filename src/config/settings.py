@@ -27,7 +27,7 @@ class Settings():
         """ Get default settings """
         return {
             "TQAE path": self.get_default_tq_install_path(),
-            "Mod sources path": r"E:\repos\ezloj\TQModdingAdvanced\mods",
+            "Mod sources path": r"",
             "TQAE Save folder": self.get_tq_save_folder()
         }
 
@@ -65,6 +65,10 @@ class Settings():
         logger.info(f"Found TQ installation directory: {install_dir}")
 
         return install_dir
+
+    def get_setting(self, setting_name):
+        """ Retruns setting with the specified name """
+        return self.settings[setting_name]
 
     def get_tq_save_folder(self):
         """ Finds the TQ save folder and puts it into settings """
