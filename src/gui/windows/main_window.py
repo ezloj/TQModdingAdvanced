@@ -94,7 +94,6 @@ class MainWindow(QMainWindow):
         for frame in self.frames:
             frame.hide()
 
-        #frame_classes = (ModMergeFrame, ModManagerFrame)
         frame_to_show = self.findChild(QWidget, name=frame_name)
         logger.debug(f"Found frame: {frame_to_show}")
         if frame_to_show:

@@ -1,1 +1,0 @@
-# Art manager tool automation
