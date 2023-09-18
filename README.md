@@ -13,6 +13,13 @@ The latter will drop you off in a shell with current directory (this repository)
 From there on, to get a python shell - run `wine python3`  
 After that, to import settings module: `import src.config.settings`  
 
+### If you don't want docker  
+Use your own python and install venv. requirements.txt is in the project root  
+I strongly recommend learning to use docker. In this setup everything is automated (see above section for using docker and make)  
+Docker is a powerful tool for development that allows to seamlessly switch project components  
+and dependencies or even the operating system in minutes and go back instantly  
+With Makefile and docker-compose like in this project you don't have to switch between venvs (or anything else for that matter)  
+
 ### Notes
 #### Issues with volume mount path conversion
 To avoid those do `export MSYS_NO_PATHCONV=1` before doing anything  

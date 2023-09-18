@@ -24,7 +24,7 @@ all: local-container
 # run locally
 local-container:
 	@echo "Building local images..."
-	${DOCKER_COMPOSE} build wine tinker >/dev/null 2>&1
+	${DOCKER_COMPOSE} build wine tinker > /dev/null 2>&1
 
 tinker: local-container
 	${TINKER}
