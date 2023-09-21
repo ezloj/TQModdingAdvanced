@@ -4,6 +4,7 @@ Mod merge frame that will be displayed within the main window
 import logging
 import os
 import re
+import shutil
 import traceback
 
 from PyQt6.QtWidgets import QListWidget, QAbstractItemView, QPushButton, QLabel, QLineEdit
@@ -52,6 +53,10 @@ class ModMergeFrame(CommonFrame):
         self.new_mod_name_field.setToolTip(new_mod_tooltip)
         self.new_mod_name_field.textChanged.connect(self.new_mod_name_changed)
         self.layout().addWidget(self.new_mod_name_field, 3, 0, 1, 1, alignment=Qt.AlignmentFlag.AlignTop)
+
+        # Status label
+        self.status_label = QLabel("Status: provide inputs to begin")
+        self.layout().addWidget(self.status_label, 4, 0, 1, 1, alignment=Qt.AlignmentFlag.AlignTop)
 
         # Build button
         build_button = QPushButton('Build')
@@ -122,21 +127,27 @@ class ModMergeFrame(CommonFrame):
         try:
             if not self.selected_mods:
                 self.mod_list.setStyleSheet(self.bad_style_sheet)
-                logger.debug("No mods selected so can't really merge anything!")
+                info_text = "No mods selected!"
+                logger.debug(info_text)
+                self.status_label.setText(f"{info_text}")
                 return
             if not self.validate_new_mod_name():
-                logger.debug("Provided mod name is either empty or doesn't conform to the naming regex")
+                info_text = "Mod name has to match '^[a-zA-Z0-9_-]+$'"
+                logger.debug(info_text)
+                self.status_label.setText(f"{info_text}")
                 self.new_mod_name_field.setStyleSheet(self.bad_style_sheet)
                 return
+
+            self.status_label.setText("Status: working")
+            new_mod_name = self.new_mod_name_field.text()
 
             art_manager = ArtManager(
                 installation_path = self.settings.get_setting("TQAE path"),
                 settings_path = self.settings.get_setting("TQAE Save folder")
             )
-
             mod_merge = ModMerge(
                 output_path=art_manager.tools_ini['localdir'],
-                new_mod_name=self.new_mod_name_field.text()
+                new_mod_name=new_mod_name
             )
 
             mod_merge.set_mods(self.selected_mods)
@@ -146,7 +157,19 @@ class ModMergeFrame(CommonFrame):
                 self.resolve_conflicts(mod_merge.overlaps)
             mod_merge.merge()
 
-            art_manager.build(self.new_mod_name_field.text())
+            # Art Manager building
+            art_manager.set_build_mod_name(new_mod_name)
+            art_manager_output_mod_dir = art_manager.build(self.new_mod_name_field.text())
+
+            # Art Manager is done at this point
+            mods_dir = os.path.join(self.settings.get_setting("TQAE Save folder"), "custommaps")
+            os.makedirs(mods_dir, exist_ok=True)
+            mod_destination_dir = os.path.join(mods_dir, new_mod_name)
+            logger.debug(f"Copying {art_manager_output_mod_dir} into {mod_destination_dir}")
+            shutil.copytree(art_manager_output_mod_dir, mod_destination_dir)
+            self.status_label.setText(
+                f"Status: build complete!\nMod dir:\n{mod_destination_dir}\nYou can play the game with the mod now"
+            )
 
         except Exception as exc:
             traceback_formatted = traceback.format_exc()
