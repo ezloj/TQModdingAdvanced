@@ -42,13 +42,13 @@ build-tqma:
 # QA
 qa: static-analysis flake8 coverage
 
-#coverage
+# coverage
 coverage: local-container
 	${WINE} pytest --cov-report term-missing --cov=src test
 
 .PHONY: qa coverage
 
-#static analysis
+# static analysis
 static-analysis: lint mccabe
 
 lint: local-container
