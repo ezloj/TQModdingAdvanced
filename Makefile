@@ -40,7 +40,7 @@ build-tqma:
 .PHONY: all build build-tqma
 
 # QA
-qa: static-analysis flake8 coverage
+qa: static-analysis coverage
 
 # coverage
 coverage: local-container
@@ -60,11 +60,6 @@ mccabe: local-container
 
 .PHONY: static-analysis lint mccabe
 
-flake8: local-container
-	${WINE} python run pylint src test
-
-.PHONY: flake8
-
 #security
 security: bandit dodgy
 
@@ -82,11 +77,10 @@ dodgy:
 test: unit-tests integration-tests
 
 unit-tests: local-container
-	${WINE} pytest ${PYTEST_OPTIONS} test/unit
+	${WINE} pytest -p no:cacheprovider ${PYTEST_OPTIONS} test/unit
 
 integration-tests: local-container
-	${WINE} pytest ${PYTEST_OPTIONS} test/integration
-
+	${WINE} pytest -p no:cacheprovider ${PYTEST_OPTIONS} test/integration
 
 .PHONY: test unit-tests integration-tests
 
