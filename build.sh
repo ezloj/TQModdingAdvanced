@@ -13,3 +13,5 @@ wine pyinstaller --clean --windowed --name tqma --specpath /tmp/spec --distpath 
 mkdir output
 cp -R /tmp/dist/tqma/* output
 find . -name __pycache__ | xargs rm -fr
+# this gets created because pyinstaller runs the code
+rm -f tqma_log.txt
