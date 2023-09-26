@@ -58,6 +58,11 @@ class ModMergeFrame(CommonFrame):
         self.status_label = QLabel("Status: provide inputs to begin")
         self.layout().addWidget(self.status_label, 4, 0, 1, 1, alignment=Qt.AlignmentFlag.AlignTop)
 
+        # Mod reload button
+        build_button = QPushButton('Reload mods')
+        build_button.clicked.connect(self.load_mod_list)
+        self.layout().addWidget(build_button, 0, 1, alignment=Qt.AlignmentFlag.AlignBottom)
+
         # Build button
         build_button = QPushButton('Build')
         build_button.clicked.connect(self.merge_mods)
@@ -87,6 +92,7 @@ class ModMergeFrame(CommonFrame):
 
     def load_mod_list(self):
         """ Loads an instance of Mod for all directories in settings["Mod sources path"] """
+        self.mods = []
         if not self.settings.get_setting("Mod sources path"):
             logger.debug("Can't load mods as the mod sources path setting is empty!")
             return

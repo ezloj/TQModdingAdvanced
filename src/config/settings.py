@@ -5,6 +5,7 @@ import pathlib
 import platform
 import winreg
 
+from src.binary_automation.art_manager import ArtManager
 
 logger = logging.getLogger("tqma")
 
@@ -14,8 +15,9 @@ class Settings():
     Represents settings. Will read the settings file if available.
     If not: will create it with defaults
     """
-    def __init__(self):
-        self.settings_file = os.path.join(pathlib.Path.home(), ".tqma_settings.json")
+    def __init__(self, settings_dir):
+        self.settings_file = os.path.join(settings_dir, ".tqma_settings.json")
+        logger.debug(f"Settings file: {self.settings_file}")
         if pathlib.Path(self.settings_file).is_file():
             self.settings = self.read_settings_file()
         else:
@@ -23,12 +25,28 @@ class Settings():
             self.write_settings()
         logger.debug(f"Settings: {self.settings}")
 
+    def get_mod_sources_path(self, tq_install_path, tq_save_folder):
+        """ Mod sources path is set to Art Manager's working folder by default """
+        art_manager = ArtManager(
+            installation_path = tq_install_path,
+            settings_path = tq_save_folder
+        )
+        working_dir = os.path.join(art_manager.tools_ini['localdir'].strip(), "CustomMaps")
+        logger.debug(f"Got default working directory from art manager: {working_dir}")
+
+        return working_dir
+
     def get_defaults(self):
         """ Get default settings """
+        tq_install_path = self.get_default_tq_install_path()
+        tq_save_folder = self.get_tq_save_folder()
+        mod_sources_path = ""
+        if tq_install_path and tq_save_folder:
+            mod_sources_path = self.get_mod_sources_path(tq_install_path, tq_save_folder)
         return {
-            "TQAE path": self.get_default_tq_install_path(),
-            "Mod sources path": r"",
-            "TQAE Save folder": self.get_tq_save_folder()
+            "TQAE path": tq_install_path,
+            "TQAE Save folder": tq_save_folder,
+            "Mod sources path": mod_sources_path
         }
 
     def get_default_tq_install_path(self):
@@ -53,14 +71,14 @@ class Settings():
                     access=winreg.KEY_READ | other_view_flag
                 )
             except WindowsError as err:
-                logger.error(error_message)
-                raise RuntimeError(error_message) from err
+                logger.error(f"{error_message}: {err}")
+                return ""
 
         try:
             install_dir = winreg.QueryValueEx(tqae_key, 'InstallLocation')[0]
         except WindowsError as err:
-            logger.error(error_message)
-            raise RuntimeError(error_message) from err
+            logger.error(f"{error_message}: {err}")
+            return ""
 
         logger.info(f"Found TQ installation directory: {install_dir}")
 
@@ -78,13 +96,13 @@ class Settings():
 
         error_message = r"Could not find save game path (usually Documents\My Games\Titan Quest - Immortal Throne)"
         logger.error(error_message)
-        raise RuntimeError(error_message)
+
+        return ""
 
     def read_settings_file(self):
         """ Reads the settings json file and returns a python dictionary with them """
         with open(self.settings_file, encoding="utf-8") as settings_file:
             return json.load(settings_file)
-
 
     def write_settings(self):
         """ Writes settings from class attribute to settings file """

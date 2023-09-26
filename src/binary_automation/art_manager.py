@@ -48,7 +48,7 @@ class ArtManager:
         logger.debug("Build complete! Killing Art Manager...")
         self.app.kill()
         logger.debug("Copying the output folder")
-        output_mod_dir = os.path.join(self.tools_ini["builddir"].strip(), "custommaps", output_mod_name)
+        output_mod_dir = os.path.join(self.tools_ini["builddir"].strip(), "CustomMaps", output_mod_name)
         logger.debug(f"Output mod dir: {output_mod_dir}")
 
         return output_mod_dir

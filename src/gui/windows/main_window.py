@@ -6,7 +6,7 @@ import traceback
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
-from PyQt6.QtWidgets import QMainWindow, QToolBar, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QMainWindow, QMessageBox, QToolBar, QVBoxLayout, QWidget
 
 from src.gui.frames.mod_merge_frame import ModMergeFrame
 from src.gui.frames.mod_manager_frame import ModManagerFrame
@@ -46,10 +46,28 @@ class MainWindow(QMainWindow):
             central_widget.setLayout(central_widget_layout)
             self.setCentralWidget(central_widget)
 
+            self.check_settings()
+
         except Exception as exc:
             traceback_formatted = traceback.format_exc()
             logger.info(traceback_formatted)
             raise RuntimeError(traceback_formatted) from exc
+
+    def check_settings(self):
+        """ Checks if any of the settings is empty. Forces user input if so """
+        empty_keys = []
+        for key, _ in self.settings.settings.items():
+            if not self.settings.settings[key] and self.settings.settings[key] is not False:
+                empty_keys.append(key)
+
+        if empty_keys:
+            logger.debug(f"One or more settings not set: {empty_keys} calling an info box and opening settings")
+            QMessageBox.information(
+                self,
+                "Error!",
+                f"Empty settings detected: {empty_keys}!\nYou will have to fill those in manually"
+            )
+            self.get_settings_window()
 
     def get_settings_window(self):
         """ Generates and shows settings window from which the settings can be edited """

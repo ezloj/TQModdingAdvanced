@@ -18,7 +18,7 @@ class TestSettings(unittest.TestCase):
         """ Use this method to setup the tests """
 
         print() # this just prints a newline after module name printed by pytest
-        self.settings = Settings()
+        self.settings = Settings(r"C:\users\root")
 
 
     def test_get_settings_file(self):

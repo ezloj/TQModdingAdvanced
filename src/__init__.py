@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 
 
 class CustomFormatter(logging.Formatter):
@@ -37,7 +36,9 @@ logger.setLevel("DEBUG")
 ch = logging.StreamHandler()
 ch.setLevel(LOGGING_LEVEL)
 
-fh = logging.FileHandler(filename = os.path.join(Path.home(), "tqma_log.txt"), mode = 'w')
+fh = logging.FileHandler(
+    filename = os.path.join(os.path.dirname(os.path.dirname(__file__)), "tqma_log.txt"), mode = 'w'
+)
 fh.setLevel("DEBUG")
 
 ch.setFormatter(CustomFormatter())
