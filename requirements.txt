@@ -1,9 +1,6 @@
 pytest==6.2.5
 pytest-cov==2.10.1
-#pylint==2.6.0
-flake8==3.8.3
 requests==2.24.0
-#black=20.8b1
 PyQt6==6.5.0
 pyinstaller==5.13.0
 pywinauto==0.6.8
