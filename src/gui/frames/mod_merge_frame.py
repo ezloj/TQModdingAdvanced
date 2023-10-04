@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import shutil
+import subprocess
 import traceback
 
 from PyQt6.QtWidgets import QListWidget, QAbstractItemView, QPushButton, QLabel, QLineEdit
@@ -28,6 +29,10 @@ class ModMergeFrame(CommonFrame):
         self.good_style_sheet = None
         self.bad_style_sheet = "border: 1px solid red;"
         self.layout().setSpacing(0)
+        self.art_manager = ArtManager(
+            installation_path = self.settings.get_setting("TQAE path"),
+            settings_path = self.settings.get_setting("TQAE Save folder")
+        )
 
         # Mod list label
         mod_list_tooltip = "Use CTRL and SHIFT to select multiple"
@@ -61,7 +66,22 @@ class ModMergeFrame(CommonFrame):
         # Mod reload button
         build_button = QPushButton('Reload mods')
         build_button.clicked.connect(self.load_mod_list)
-        self.layout().addWidget(build_button, 0, 1, alignment=Qt.AlignmentFlag.AlignBottom)
+        self.layout().addWidget(build_button, 0, 1, alignment=Qt.AlignmentFlag.AlignTop)
+
+        # Open mod sources dir
+        mod_sources_button = QPushButton('Open mod sources dir')
+        mod_sources_button.clicked.connect(self.open_mod_sources_dir)
+        self.layout().addWidget(mod_sources_button, 1, 1, alignment=Qt.AlignmentFlag.AlignTop)
+
+        # Open art manager build dir
+        build_dir_button = QPushButton('Open build dir')
+        build_dir_button.clicked.connect(self.open_art_manager_build_dir)
+        self.layout().addWidget(build_dir_button, 2, 1, alignment=Qt.AlignmentFlag.AlignTop)
+
+        # Open game mods dir
+        game_mods_dir_button = QPushButton('Open game mods dir')
+        game_mods_dir_button.clicked.connect(self.open_game_mods_dir)
+        self.layout().addWidget(game_mods_dir_button, 3, 1, alignment=Qt.AlignmentFlag.AlignTop)
 
         # Build button
         build_button = QPushButton('Build')
@@ -74,21 +94,6 @@ class ModMergeFrame(CommonFrame):
 
         self.show()
 
-    def resolve_conflicts(self, overlaps):
-        """ Generates and shows settings window from which the settings can be edited """
-
-        logger.info("Calling creation of conflict resolution window")
-
-        conflict_resolution_window = ConflictResolutionWindow(overlaps)
-        conflict_resolution_window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
-        conflict_resolution_window.setWindowModality(Qt.WindowModality.ApplicationModal)
-        conflict_resolution_window.show()
-
-        logger.info("Waiting for conflict resolution")
-        wait_loop = QEventLoop()
-        conflict_resolution_window.destroyed.connect(wait_loop.quit)
-        wait_loop.exec()
-        logger.info("Conflict resolution complete")
 
     def load_mod_list(self):
         """ Loads an instance of Mod for all directories in settings["Mod sources path"] """
@@ -105,28 +110,6 @@ class ModMergeFrame(CommonFrame):
 
         self.mod_list.clear()
         self.mod_list.addItems([mod.name for mod in self.mods])
-
-    def lock_controls(self):
-        """ Lock all the interactable controls within the frame """
-
-    def new_mod_name_changed(self):
-        """ Triggered by new_mod_name_field being changed by the user """
-        if self.validate_new_mod_name():
-            self.new_mod_name_field.setStyleSheet(self.good_style_sheet)
-        else:
-            self.new_mod_name_field.setStyleSheet(self.bad_style_sheet)
-
-    def on_mod_list_change(self):
-        """ Stores selected mods when mod list gets changed by user"""
-        self.selected_mods = []
-        self.mod_list.setStyleSheet(self.good_style_sheet)
-        selected_items = [item.text() for item in self.mod_list.selectedItems()]
-        for selected_item in selected_items:
-            for mod in self.mods:
-                if mod.name == selected_item:
-                    self.selected_mods.append(mod)
-
-        logger.info("Currently selected mods: %s", [mod.name for mod in self.selected_mods])
 
     def merge_mods(self):
         """ Merges selected mods with selected options using artmanager """
@@ -147,12 +130,8 @@ class ModMergeFrame(CommonFrame):
             self.status_label.setText("Status: working")
             new_mod_name = self.new_mod_name_field.text()
 
-            art_manager = ArtManager(
-                installation_path = self.settings.get_setting("TQAE path"),
-                settings_path = self.settings.get_setting("TQAE Save folder")
-            )
             mod_merge = ModMerge(
-                output_path=art_manager.tools_ini['localdir'],
+                output_path=self.art_manager.tools_ini['localdir'],
                 new_mod_name=new_mod_name
             )
 
@@ -164,8 +143,8 @@ class ModMergeFrame(CommonFrame):
             mod_merge.merge()
 
             # Art Manager building
-            art_manager.set_build_mod_name(new_mod_name)
-            art_manager_output_mod_dir = art_manager.build(self.new_mod_name_field.text())
+            self.art_manager.set_build_mod_name(new_mod_name)
+            art_manager_output_mod_dir = self.art_manager.build(self.new_mod_name_field.text())
 
             # Art Manager is done at this point
             mods_dir = os.path.join(self.settings.get_setting("TQAE Save folder"), "custommaps")
@@ -181,6 +160,71 @@ class ModMergeFrame(CommonFrame):
             traceback_formatted = traceback.format_exc()
             logger.debug(traceback_formatted)
             raise RuntimeError(traceback_formatted) from exc
+
+    def new_mod_name_changed(self):
+        """ Triggered by new_mod_name_field being changed by the user """
+        if self.validate_new_mod_name():
+            self.new_mod_name_field.setStyleSheet(self.good_style_sheet)
+        else:
+            self.new_mod_name_field.setStyleSheet(self.bad_style_sheet)
+
+    def on_mod_list_change(self):
+        """ Stores selected mods when mod list gets changed by user"""
+        self.selected_mods = []
+        self.mod_list.setStyleSheet(self.good_style_sheet)
+        selected_items = [item.text() for item in self.mod_list.selectedItems()]
+        for selected_item in selected_items:
+            for mod in self.mods:
+                if mod.name == selected_item:
+                    self.selected_mods.append(mod)
+
+        logger.info("Currently selected mods: %s", [mod.name for mod in self.selected_mods])
+
+    def open_art_manager_build_dir(self):
+        """ Opens mod sources dir """
+        try:
+            art_manager_build_dir = os.path.join(self.art_manager.tools_ini['builddir'], "CustomMaps")
+            logger.debug(f"Opening {art_manager_build_dir}")
+            subprocess.Popen(f'explorer "{art_manager_build_dir}"')
+        except Exception as exc:
+            traceback_formatted = traceback.format_exc()
+            logger.debug(f"Could not open dir, exception: {exc}\ntraceback: {traceback_formatted}")
+
+    def open_game_mods_dir(self):
+        """ Opens mod sources dir """
+        try:
+            game_mod_dir = os.path.join(self.settings.get_setting("TQAE Save folder"), "CustomMaps")
+            logger.debug(f"Opening {game_mod_dir}")
+            subprocess.Popen(f'explorer "{game_mod_dir}"')
+        except Exception as exc:
+            traceback_formatted = traceback.format_exc()
+            logger.debug(f"Could not open dir, exception: {exc}\ntraceback: {traceback_formatted}")
+
+    def open_mod_sources_dir(self):
+        """ Opens mod sources dir """
+        try:
+            mod_sources_dir = self.settings.get_setting("Mod sources path")
+            logger.debug(f"Opening {mod_sources_dir}")
+            subprocess.Popen(f'explorer "{mod_sources_dir}"')
+        except Exception as exc:
+            traceback_formatted = traceback.format_exc()
+            logger.debug(f"Could not open dir, exception: {exc}\ntraceback: {traceback_formatted}")
+
+    def resolve_conflicts(self, overlaps):
+        """ Generates and shows settings window from which the settings can be edited """
+
+        logger.info("Calling creation of conflict resolution window")
+
+        conflict_resolution_window = ConflictResolutionWindow(overlaps)
+        conflict_resolution_window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
+        conflict_resolution_window.setWindowModality(Qt.WindowModality.ApplicationModal)
+        conflict_resolution_window.show()
+
+        logger.info("Waiting for conflict resolution")
+        wait_loop = QEventLoop()
+        conflict_resolution_window.destroyed.connect(wait_loop.quit)
+        wait_loop.exec()
+        logger.info("Conflict resolution complete")
 
     def validate_new_mod_name(self):
         """ Validates the mod name to be correct so that later a directory can be created with that name """
