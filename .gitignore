@@ -8,3 +8,5 @@
 output
 experiment*
 tqma_log.txt
+tqma_debug_log.txt
+MapBuildStatistics.csv
