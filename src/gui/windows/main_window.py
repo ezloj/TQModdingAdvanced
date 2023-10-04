@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
                 empty_keys.append(key)
 
         if empty_keys:
-            logger.debug(f"One or more settings not set: {empty_keys} calling an info box and opening settings")
+            logger.warning(f"One or more settings not set: {empty_keys} calling an info box and opening settings")
             QMessageBox.information(
                 self,
                 "Error!",

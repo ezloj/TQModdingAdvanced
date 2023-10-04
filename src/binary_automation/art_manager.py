@@ -15,7 +15,7 @@ logger = logging.getLogger("tqma")
 class ArtManager:
     """ Represents art manager tool from official TQAE install path """
     def __init__(self, installation_path, settings_path):
-        logger.debug("Instantiating art manager object")
+        logger.info("Instantiating art manager object")
         self.app = None
         self.build_log = None
         self.main_window_dialog = None
@@ -27,11 +27,11 @@ class ArtManager:
 
     def build(self, output_mod_name):
         """ Builds the selected mod """
-        logger.debug(f"Building mod {output_mod_name}:)")
+        logger.info(f"Building mod {output_mod_name}:)")
         self.run()
-        logger.debug("Pressing F7 to build")
+        logger.info("Pressing F7 to build")
         self.main_window_dialog.send_keystrokes('{F7}')
-        logger.debug("Waiting for the build to complete")
+        logger.info("Waiting for the build to complete")
         self.main_window_dialog.minimize()
         done = False
         while not done:
@@ -40,16 +40,16 @@ class ArtManager:
                     texts = child.texts()
                     for text in texts:
                         if 'Build time' in text:
-                            logger.debug(f"Done. Build time: {text}")
+                            logger.info(f"Done. Build time: {text}")
                             self.build_log = "\n".join(texts)
-                            logger.debug(f"Build log: {self.build_log}")
+                            logger.info(f"Build log: {self.build_log}")
                             done = True
             time.sleep(0.2)
-        logger.debug("Build complete! Killing Art Manager...")
+        logger.info("Build complete! Killing Art Manager...")
         self.app.kill()
-        logger.debug("Copying the output folder")
+        logger.info("Copying the output folder")
         output_mod_dir = os.path.join(self.tools_ini["builddir"].strip(), "CustomMaps", output_mod_name)
-        logger.debug(f"Output mod dir: {output_mod_dir}")
+        logger.info(f"Output mod dir: {output_mod_dir}")
 
         return output_mod_dir
 
@@ -57,21 +57,21 @@ class ArtManager:
         """ Reads tools_ini and extracts some important settings related to work/build paths """
         parsed_settings = {}
 
-        logger.debug(f"Tools.ini path: {self.tools_ini_path}")
+        logger.info(f"Tools.ini path: {self.tools_ini_path}")
         with open(self.tools_ini_path, 'r', encoding='utf-8') as tools_ini:
             ini_file_contents = tools_ini.readlines()
             for line in ini_file_contents:
                 if "=" in line:
                     parsed_settings[line.split("=")[0]] = line.strip().split("=")[1]
-        logger.debug(f"Working dir: {parsed_settings['localdir']}")
-        logger.debug(f"Build dir: {parsed_settings['builddir']}")
-        logger.debug(f"Tools dir: {parsed_settings['toolsdir']}")
+        logger.info(f"Working dir: {parsed_settings['localdir']}")
+        logger.info(f"Build dir: {parsed_settings['builddir']}")
+        logger.info(f"Tools dir: {parsed_settings['toolsdir']}")
 
         return parsed_settings, ini_file_contents
 
     def run(self):
         """ Runs the ArtManager executable """
-        logger.debug("Starting art manager")
+        logger.info("Starting art manager")
         self.app = Application(backend="win32").start(self.path)
         # wait for the window to come up
         self.main_window_dialog = self.app.window(best_match='ArtManager').wait('ready')
@@ -89,7 +89,7 @@ class ArtManager:
                     logger.debug(f"Found {line.strip()}, updating")
                 new_contents.append(line)
             self.tools_ini_file_contents = new_contents
-            logger.debug(f"Updated parsed Tools.ini setting {setting} to {value}")
+            logger.info(f"Updated parsed Tools.ini setting {setting} to {value}")
             return True
 
         logger.error(f"Failed to update parsed Tools.ini setting {setting} to {value}")
@@ -97,7 +97,7 @@ class ArtManager:
 
     def write_tools_ini(self):
         """ Writes self.tools_ini to the Tools.ini file """
-        logger.debug("Writing Tools.ini")
+        logger.info("Writing Tools.ini")
         with open(self.tools_ini_path, 'w', encoding='utf-8') as tools_ini:
             tools_ini.writelines(self.tools_ini_file_contents)
 

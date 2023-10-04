@@ -17,13 +17,13 @@ class Settings():
     """
     def __init__(self, settings_dir):
         self.settings_file = os.path.join(settings_dir, ".tqma_settings.json")
-        logger.debug(f"Settings file: {self.settings_file}")
+        logger.info(f"Settings file: {self.settings_file}")
         if pathlib.Path(self.settings_file).is_file():
             self.settings = self.read_settings_file()
         else:
             self.settings = self.get_defaults()
             self.write_settings()
-        logger.debug(f"Settings: {self.settings}")
+        logger.info(f"Settings: {self.settings}")
 
     def get_mod_sources_path(self, tq_install_path, tq_save_folder):
         """ Mod sources path is set to Art Manager's working folder by default """
@@ -32,7 +32,7 @@ class Settings():
             settings_path = tq_save_folder
         )
         working_dir = os.path.join(art_manager.tools_ini['localdir'].strip(), "CustomMaps")
-        logger.debug(f"Got default working directory from art manager: {working_dir}")
+        logger.info(f"Got default working directory from art manager: {working_dir}")
 
         return working_dir
 

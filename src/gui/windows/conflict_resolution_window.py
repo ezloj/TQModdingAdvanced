@@ -51,7 +51,7 @@ class ConflictResolutionWindow(QWidget):
 
     def process_resolution_choice(self, choice):
         """ This method is called when user presses the button for one of conflict value choices """
-        logger.debug(f"Resolution choice: {choice}")
+        logger.info(f"Resolution choice: {choice}")
         self.currently_processed_overlap.resolved[self.currently_processed_key] = choice
         self.clear_layout(self.layout())
         self.number_of_conflicts_left -= 1
@@ -63,7 +63,7 @@ class ConflictResolutionWindow(QWidget):
             If there are no overlaps left the conflict resolution window is closed
         """
         if not self.overlaps and not self.currently_processed_overlap.conflicting_keys:
-            logger.debug("No overlaps or conflicting keys left to process, closing")
+            logger.info("No overlaps or conflicting keys left to process, closing")
             self.close()
             return
 
@@ -78,7 +78,7 @@ class ConflictResolutionWindow(QWidget):
         group_box_x_position = 2
 
         self.setWindowTitle(f"TQMA conflicts left: {self.number_of_conflicts_left}")
-        logger.debug(
+        logger.info(
             f"Processing {overlap.dbr_relpath} {conflicting_key}, conflicts left: {self.number_of_conflicts_left}"
         )
 

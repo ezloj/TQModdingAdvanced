@@ -72,14 +72,14 @@ class ModMerge:
 
     def merge(self):
         """ Aggregator method for all types of files that are to be merged """
-        logger.debug(f"Merging mods {[mod.name for mod in self.mods_to_merge]} into {self.new_mod.name}")
+        logger.info(f"Merging mods {[mod.name for mod in self.mods_to_merge]} into {self.new_mod.name}")
         self.merge_database_files()
         self.merge_asset_files()
         self.merge_source_files()
 
     def merge_asset_files(self):
         """ Merge asssets folder. Right now it just chooses first one and copies """
-        logger.debug(f"Merging assets for {self.new_mod.name}")
+        logger.info(f"Merging assets for {self.new_mod.name}")
         for asset in self.mods_to_merge[0].files["assets"]:
             new_mod_asset = os.path.normpath(os.path.join(self.new_mod.path, asset))
             source_asset_path = os.path.join(self.mods_to_merge[0].path, asset)
@@ -112,7 +112,7 @@ class ModMerge:
 
     def process_database_files(self):
         """ Merge database folder """
-        logger.debug(f"Processing database files for {self.new_mod.name}")
+        logger.info(f"Processing database files for {self.new_mod.name}")
         intersections = []
         list_of_mod_database_file_lists = [mod.files["database"] for mod in self.mods_to_merge]
 
@@ -132,7 +132,7 @@ class ModMerge:
 
     def merge_source_files(self):
         """ Merge source folder """
-        logger.debug(f"Merging sources for {self.new_mod.name}")
+        logger.info(f"Merging sources for {self.new_mod.name}")
         for source in self.mods_to_merge[0].files["source"]:
             new_mod_source = os.path.normpath(os.path.join(self.new_mod.path, source))
             source_source_path = os.path.join(self.mods_to_merge[0].path, source)
