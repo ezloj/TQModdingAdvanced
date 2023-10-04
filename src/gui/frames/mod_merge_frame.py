@@ -77,31 +77,31 @@ class ModMergeFrame(CommonFrame):
     def resolve_conflicts(self, overlaps):
         """ Generates and shows settings window from which the settings can be edited """
 
-        logger.debug("Calling creation of conflict resolution window")
+        logger.info("Calling creation of conflict resolution window")
 
         conflict_resolution_window = ConflictResolutionWindow(overlaps)
         conflict_resolution_window.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         conflict_resolution_window.setWindowModality(Qt.WindowModality.ApplicationModal)
         conflict_resolution_window.show()
 
-        logger.debug("Waiting for conflict resolution")
+        logger.info("Waiting for conflict resolution")
         wait_loop = QEventLoop()
         conflict_resolution_window.destroyed.connect(wait_loop.quit)
         wait_loop.exec()
-        logger.debug("Conflict resolution complete")
+        logger.info("Conflict resolution complete")
 
     def load_mod_list(self):
         """ Loads an instance of Mod for all directories in settings["Mod sources path"] """
         self.mods = []
         if not self.settings.get_setting("Mod sources path"):
-            logger.debug("Can't load mods as the mod sources path setting is empty!")
+            logger.error("Can't load mods as the mod sources path setting is empty!")
             return
 
         for child in os.listdir(self.settings.get_setting("Mod sources path")):
             full_child_path = os.path.join(self.settings.get_setting("Mod sources path"), child)
             if os.path.isdir(full_child_path):
                 self.mods.append(Mod(full_child_path))
-        logger.debug("Loaded mods: %s", [mod.name for mod in self.mods])
+        logger.info("Loaded mods: %s", [mod.name for mod in self.mods])
 
         self.mod_list.clear()
         self.mod_list.addItems([mod.name for mod in self.mods])
@@ -126,7 +126,7 @@ class ModMergeFrame(CommonFrame):
                 if mod.name == selected_item:
                     self.selected_mods.append(mod)
 
-        logger.debug("Currently selected mods: %s", [mod.name for mod in self.selected_mods])
+        logger.info("Currently selected mods: %s", [mod.name for mod in self.selected_mods])
 
     def merge_mods(self):
         """ Merges selected mods with selected options using artmanager """
@@ -134,12 +134,12 @@ class ModMergeFrame(CommonFrame):
             if not self.selected_mods:
                 self.mod_list.setStyleSheet(self.bad_style_sheet)
                 info_text = "No mods selected!"
-                logger.debug(info_text)
+                logger.info(info_text)
                 self.status_label.setText(f"{info_text}")
                 return
             if not self.validate_new_mod_name():
                 info_text = "Mod name has to match '^[a-zA-Z0-9_-]+$'"
-                logger.debug(info_text)
+                logger.info(info_text)
                 self.status_label.setText(f"{info_text}")
                 self.new_mod_name_field.setStyleSheet(self.bad_style_sheet)
                 return
@@ -159,7 +159,7 @@ class ModMergeFrame(CommonFrame):
             mod_merge.set_mods(self.selected_mods)
             mod_merge.process_database_files()
             if mod_merge.conflicts:
-                logger.debug("Resolving conflicts...")
+                logger.info("Resolving conflicts...")
                 self.resolve_conflicts(mod_merge.overlaps)
             mod_merge.merge()
 
@@ -171,7 +171,7 @@ class ModMergeFrame(CommonFrame):
             mods_dir = os.path.join(self.settings.get_setting("TQAE Save folder"), "custommaps")
             os.makedirs(mods_dir, exist_ok=True)
             mod_destination_dir = os.path.join(mods_dir, new_mod_name)
-            logger.debug(f"Copying {art_manager_output_mod_dir} into {mod_destination_dir}")
+            logger.info(f"Copying {art_manager_output_mod_dir} into {mod_destination_dir}")
             shutil.copytree(art_manager_output_mod_dir, mod_destination_dir)
             self.status_label.setText(
                 f"Status: build complete!\nMod dir:\n{mod_destination_dir}\nYou can play the game with the mod now"

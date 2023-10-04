@@ -29,7 +29,7 @@ class Mod:
                     for d, dirs, files in os.walk(os.path.join(self.path, directory))
                     for x in files]
 
-        logger.debug(
+        logger.info(
             f"""
             Mod file count for {self.name}:
             {len(files["assets"])} assets, {len(files["database"])} database, {len(files["source"])} source
@@ -40,7 +40,7 @@ class Mod:
 
     def setup_directory_structure(self):
         """ Create output mod's directory structure"""
-        logger.debug(f"Creating directory structure for {self.name}...")
+        logger.info(f"Creating directory structure for {self.name}...")
         for directory in self.mod_directories:
             try:
                 new_dir = os.path.normpath(os.path.join(self.path, directory))

@@ -54,7 +54,7 @@ class SettingsWindow(QWidget):
         self.setMinimumWidth(longest_setting * 6 + 450)
 
         for setting, value in self.settings.settings.items():
-            logger.debug(f"Generating settings widgets for setting: {setting} {value}")
+            logger.info(f"Generating settings widgets for setting: {setting} {value}")
             self.settings_groupboxes[setting] = self.create_setting_groupbox(setting, value, longest_setting)
             layout.addWidget(self.settings_groupboxes[setting])
 
@@ -87,7 +87,7 @@ class SettingsWindow(QWidget):
                 continue
             if not self.settings.settings[key] and not value:
                 empty_settings_found = True
-                logger.debug(f"Can't cancel settings window because setting {key} can not be determined")
+                logger.warning(f"Can't cancel settings window because setting {key} can not be determined")
                 value_box.setStyleSheet("border: 1px solid red;")
 
         if empty_settings_found:
