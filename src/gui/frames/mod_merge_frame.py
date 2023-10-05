@@ -155,6 +155,7 @@ class ModMergeFrame(CommonFrame):
             self.status_label.setText(
                 f"Status: build complete!\nMod dir:\n{mod_destination_dir}\nYou can play the game with the mod now"
             )
+            self.load_mod_list()
 
         except Exception as exc:
             traceback_formatted = traceback.format_exc()
