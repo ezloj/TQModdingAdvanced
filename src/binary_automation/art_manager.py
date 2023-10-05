@@ -30,7 +30,8 @@ class ArtManager:
         logger.info(f"Building mod {output_mod_name}:)")
         self.run()
         logger.info("Pressing F7 to build")
-        self.main_window_dialog.send_keystrokes('{F7}')
+        # this worked for me but not for psixi:self.main_window_dialog.send_keystrokes('{F7}')
+        self.main_window_dialog.type_keys('{F7}')
         logger.info("Waiting for the build to complete")
         self.main_window_dialog.minimize()
         done = False
