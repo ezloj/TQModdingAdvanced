@@ -1,4 +1,6 @@
 """ DBR operations library """
+import os
+
 
 def parse_dbr(dbr_file):
     """ Takes a file path as an input and parses it as a dbr. Returns dictionary with DBR data"""
@@ -15,6 +17,7 @@ def write_dbr(dbr_data, output_file):
     for key, value in dbr_data.items():
         contents += key + "," + value + "\n"
 
+    os.makedirs(os.path.dirname(output_file), exist_ok=True)
     with open(output_file, 'w', encoding='utf-8') as dbr_contents:
         dbr_contents.write(contents)
         
