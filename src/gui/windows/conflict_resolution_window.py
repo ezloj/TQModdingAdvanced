@@ -26,15 +26,18 @@ class ConflictResolutionWindow(QWidget):
         layout.setSpacing(15)
         self.setLayout(layout)
 
-        # Make a duplicate list of objects because we will be popping them
-        self.overlaps = overlaps.copy()
-        for overlap in self.overlaps:
+        logger.debug("Generating list of conflicts from overlaps:")
+        self.conflicts = []
+        for overlap in overlaps:
+            logger.debug(f"{overlap.dbr_relpath} : {overlap.conflicting_keys}")
             if not overlap.conflicting_keys:
-                self.overlaps.remove(overlap)
+                logger.debug(f"Ignoring {overlap.dbr_relpath} from overlaps list as it has no conflicts")
+                continue
+            self.conflicts.append(overlap)
 
         # Count total number of conflicts
-        for overlap in self.overlaps:
-            self.number_of_conflicts_left += len(overlap.conflicting_keys)
+        for conflict in self.conflicts:
+            self.number_of_conflicts_left += len(conflict.conflicting_keys)
 
         # Start the conflict resolution right from init
         self.resolve_next_overlap()
@@ -52,7 +55,9 @@ class ConflictResolutionWindow(QWidget):
     def process_resolution_choice(self, choice):
         """ This method is called when user presses the button for one of conflict value choices """
         logger.info(f"Resolution choice: {choice}")
+        logger.debug("Assigning resolved key/value")
         self.currently_processed_overlap.resolved[self.currently_processed_key] = choice
+        logger.debug("Clearing layout")
         self.clear_layout(self.layout())
         self.number_of_conflicts_left -= 1
         self.resolve_next_overlap()
@@ -62,15 +67,16 @@ class ConflictResolutionWindow(QWidget):
             Pops next overlap from overlaps and runs conflict resolution for it
             If there are no overlaps left the conflict resolution window is closed
         """
-        if not self.overlaps and not self.currently_processed_overlap.conflicting_keys:
+        if not self.conflicts and not self.currently_processed_overlap.conflicting_keys:
             logger.info("No overlaps or conflicting keys left to process, closing")
             self.close()
             return
 
         if not self.currently_processed_overlap or not self.currently_processed_overlap.conflicting_keys:
-            self.currently_processed_overlap = self.overlaps.pop()
+            self.currently_processed_overlap = self.conflicts.pop()
 
         self.currently_processed_key = self.currently_processed_overlap.conflicting_keys.pop()
+
         self.run_conflict_resolution(self.currently_processed_overlap, self.currently_processed_key)
 
     def run_conflict_resolution(self, overlap, conflicting_key):
