@@ -14,8 +14,8 @@ def parse_dbr(dbr_file):
         with open(dbr_file, 'r', encoding='utf-8') as dbr_contents:
             for line in dbr_contents.readlines():
                 dbr_data[line.split(',', 1)[0]] = line.split(',', 1)[1].strip()
-    except UnicodeDecodeError as err:
-        logger.debug(f"Couldn't parse with UTF-8, trying ansi")
+    except UnicodeDecodeError as _:
+        logger.debug("Couldn't parse with UTF-8, trying ansi")
         with open(dbr_file, 'r', encoding='cp1252') as dbr_contents:
             for line in dbr_contents.readlines():
                 dbr_data[line.split(',', 1)[0]] = line.split(',', 1)[1].strip()
