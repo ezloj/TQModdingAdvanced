@@ -28,7 +28,7 @@ class ArtManager:
     def build(self, output_mod_name):
         """ Builds the selected mod """
         logger.info(f"Building mod {output_mod_name}:)")
-        self.run()
+        self.run(output_mod_name)
         logger.info("Pressing F7 to build")
         # this worked for me but not for psixi:self.main_window_dialog.send_keystrokes('{F7}')
         self.main_window_dialog.type_keys('{F7}')
@@ -70,13 +70,19 @@ class ArtManager:
 
         return parsed_settings, ini_file_contents
 
-    def run(self):
+    def run(self, output_mod_name):
         """ Runs the ArtManager executable """
         logger.info("Starting art manager")
         self.app = Application(backend="win32").start(self.path)
+        logger.debug("Launched art manager process")
         # wait for the window to come up
-        self.main_window_dialog = self.app.window(best_match='ArtManager').wait('ready')
-        self.main_window_specification = self.app.window(best_match='ArtManager')
+        expected_window_title = f"S: {output_mod_name} | A: {output_mod_name} | Art Manager"
+
+        self.main_window_dialog = self.app.window(best_match=expected_window_title).wait('ready', timeout=10)
+
+        logger.info("Art manager started")
+        self.main_window_specification = self.app.window(best_match=expected_window_title)
+        logger.debug("Aquired handle on Art Manager window")
 
     def update_tools_ini(self, setting, value):
         """ Takes a setting with a value and updates the already parsed internal representation of it """
