@@ -80,13 +80,18 @@ class ModMerge:
     def merge_asset_files(self):
         """ Merge asssets folder. Right now it just chooses first one and copies """
         logger.info(f"Merging assets for {self.new_mod.name}")
-        for asset in self.mods_to_merge[0].files["assets"]:
-            new_mod_asset = os.path.normpath(os.path.join(self.new_mod.path, asset))
-            source_asset_path = os.path.join(self.mods_to_merge[0].path, asset)
-            logger.debug(f"Copying asset {source_asset_path} into {new_mod_asset}")
-            os.makedirs(os.path.dirname(new_mod_asset), exist_ok=True)
-            shutil.copyfile(source_asset_path, new_mod_asset)
-            self.new_mod.files["assets"].append(asset)
+        for mod in self.mods_to_merge:
+            logger.debug(f"processing assets from mod '{mod.name}'")
+            for asset in mod.files["assets"]:
+                if asset in self.new_mod.files["assets"]:
+                    logger.debug(f"Asset {asset} was already copied, skipping")
+                    continue
+                new_mod_asset = os.path.normpath(os.path.join(self.new_mod.path, asset))
+                source_asset_path = os.path.join(mod.path, asset)
+                os.makedirs(os.path.dirname(new_mod_asset), exist_ok=True)
+                logger.debug(f"Copying asset {source_asset_path} into {new_mod_asset}")
+                shutil.copyfile(source_asset_path, new_mod_asset)
+                self.new_mod.files["assets"].append(asset)
 
     def merge_database_files(self):
         """ Merge asssets folder. Right now it just chooses first one and copies """
@@ -133,13 +138,18 @@ class ModMerge:
     def merge_source_files(self):
         """ Merge source folder """
         logger.info(f"Merging sources for {self.new_mod.name}")
-        for source in self.mods_to_merge[0].files["source"]:
-            new_mod_source = os.path.normpath(os.path.join(self.new_mod.path, source))
-            source_source_path = os.path.join(self.mods_to_merge[0].path, source)
-            logger.debug(f"Copying source {source_source_path} into {new_mod_source}")
-            os.makedirs(os.path.dirname(new_mod_source), exist_ok=True)
-            shutil.copyfile(source_source_path, new_mod_source)
-            self.new_mod.files["source"].append(source)
+        for mod in self.mods_to_merge:
+            logger.debug(f"processing sources from mod '{mod.name}'")
+            for source in mod.files["source"]:
+                if source in self.new_mod.files["source"]:
+                    logger.debug(f"Source {source} was already copied, skipping")
+                    continue
+                new_mod_source = os.path.normpath(os.path.join(self.new_mod.path, source))
+                source_source_path = os.path.join(mod.path, source)
+                os.makedirs(os.path.dirname(new_mod_source), exist_ok=True)
+                logger.debug(f"Copying source {source_source_path} into {new_mod_source}")
+                shutil.copyfile(source_source_path, new_mod_source)
+                self.new_mod.files["source"].append(source)
 
     def set_mods(self, mods):
         """ Set the mods that are going to be merged """
