@@ -8,11 +8,12 @@ import shutil
 import subprocess
 import traceback
 
-from PyQt6.QtWidgets import QListWidget, QAbstractItemView, QPushButton, QLabel, QLineEdit
+from PyQt6.QtWidgets import QListWidget, QAbstractItemView, QPushButton, QLabel, QLineEdit, QMessageBox
 from PyQt6.QtCore import Qt, QEventLoop
 from src.gui.frames.common_frame import CommonFrame
 from src.mods import Mod
 from src.binary_automation.art_manager import ArtManager
+from src.general_utils import rm_dir_recursive
 from src.mod_merge import ModMerge
 from src.gui.windows.conflict_resolution_window import ConflictResolutionWindow
 
@@ -33,6 +34,7 @@ class ModMergeFrame(CommonFrame):
             installation_path = self.settings.get_setting("TQAE path"),
             settings_path = self.settings.get_setting("TQAE Save folder")
         )
+
 
         # Mod list label
         mod_list_tooltip = "Use CTRL and SHIFT to select multiple"
@@ -129,6 +131,9 @@ class ModMergeFrame(CommonFrame):
 
             self.status_label.setText("Status: working")
             new_mod_name = self.new_mod_name_field.text()
+            # check if any mod directory exists already and warn user, prompting for overwrite
+            if not self.overwrite(new_mod_name):
+                return
 
             mod_merge = ModMerge(
                 output_path=self.art_manager.tools_ini['localdir'],
@@ -152,9 +157,7 @@ class ModMergeFrame(CommonFrame):
             mod_destination_dir = os.path.join(mods_dir, new_mod_name)
             logger.info(f"Copying {art_manager_output_mod_dir} into {mod_destination_dir}")
             shutil.copytree(art_manager_output_mod_dir, mod_destination_dir)
-            self.status_label.setText(
-                f"Status: build complete!\nMod dir:\n{mod_destination_dir}\nYou can play the game with the mod now"
-            )
+            self.status_label.setText("Status: build complete!\nYou can play the game with the mod now")
             self.load_mod_list()
 
         except Exception as exc:
@@ -210,6 +213,35 @@ class ModMergeFrame(CommonFrame):
         except Exception as exc:
             traceback_formatted = traceback.format_exc()
             logger.debug(f"Could not open dir, exception: {exc}\ntraceback: {traceback_formatted}")
+
+    def overwrite(self, new_mod_name):
+        """ Checks if any of the mod output directories exist. If they do, asks the user for permission to remove """
+        new_mod_build_dir = os.path.join(self.art_manager.tools_ini['builddir'], "CustomMaps", new_mod_name)
+        new_mod_game_dir = os.path.join(self.settings.get_setting("TQAE Save folder"), "CustomMaps", new_mod_name)
+        new_mod_sources_dir = os.path.join(self.settings.get_setting("Mod sources path"), new_mod_name)
+        directories = [new_mod_build_dir, new_mod_game_dir, new_mod_sources_dir]
+        prompt = False
+        directories_to_remove = []
+        message = "Looks like following directories already exist:\n"
+        for dir_check in directories:
+            if os.path.isdir(dir_check):
+                directories_to_remove.append(dir_check)
+                prompt = True
+                message += f"{dir_check}\n"
+        message += "Overwrite?"
+        if prompt:
+            response = QMessageBox.question(self, f"Overwrite {new_mod_name}?", message)
+            if response == QMessageBox.StandardButton.No:
+                logger.info("The response for removing existing directories is 'No'. So not removing")
+                return False
+
+            for directory in directories_to_remove:
+                logger.info(f"Removing {directory}")
+                rm_dir_recursive(directory)
+
+            return True
+
+        return True
 
     def resolve_conflicts(self, overlaps):
         """ Generates and shows settings window from which the settings can be edited """
